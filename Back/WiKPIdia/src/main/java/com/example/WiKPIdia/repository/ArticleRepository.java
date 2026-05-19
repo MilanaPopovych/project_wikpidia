@@ -2,13 +2,16 @@ package com.example.WiKPIdia.repository;
 
 import com.example.WiKPIdia.entity.Article;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.List;     // Додаємо імпорт для списків
+import java.util.Optional;
 
-@Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    // Spring: сам згенерує SQL-запит "SELECT * FROM articles WHERE is_published = true"
+    // Твій попередній метод (щоб працювало збереження і категорії)
+    Optional<Article> findBySlug(String slug);
+
+    // ДОДАЙ ЦЕЙ РЯДОК (щоб працював SearchController):
     List<Article> findByIsPublishedTrue();
+
 }

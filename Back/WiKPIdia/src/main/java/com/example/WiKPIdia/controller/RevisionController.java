@@ -23,14 +23,11 @@ public class RevisionController {
                 request.content()
         );
     }
-
-    // Той самий метод, який давав 404
     @PostMapping("/{id}/approve")
     public void approve(@PathVariable Long id) {
         revisionService.approveRevision(id);
     }
 
-    // Спеціальний тестовий метод для перевірки!
     @GetMapping("/test")
     public String test() {
         return "Контролер правок працює ідеально!";

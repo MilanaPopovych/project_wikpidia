@@ -22,9 +22,8 @@ import java.util.Map;
 public class DiscussionController {
 
     private final DiscussionRepository discussionRepository;
-    private final UserRepository userRepository; // Репозиторій для перевірки ролей
-
-    // Допоміжний метод безпеки
+    private final UserRepository userRepository; // репозиторій для перевірки ролей
+    // допоміжний метод безпеки
     private String getActiveUsernameSafely() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String activeUsername = null;
@@ -41,10 +40,7 @@ public class DiscussionController {
 
         return activeUsername;
     }
-
-    // =========================================================================
-    // 1. ОТРИМАННЯ КОМЕНТАРІВ ДЛЯ СТАТТІ (З ПАГІНАЦІЄЮ)
-    // =========================================================================
+    // !!!! отримання коментарів для статті з пагінацією !!!!
     @GetMapping("/articles/{slug}/discussions")
     public ResponseEntity<Page<Discussion>> getDiscussionsByArticle(
             @PathVariable String slug,
@@ -55,10 +51,7 @@ public class DiscussionController {
         Page<Discussion> discussionsPage = discussionRepository.findByArticleSlugOrderByCreatedAtDesc(slug, pageable);
         return ResponseEntity.ok(discussionsPage);
     }
-
-    // =========================================================================
-    // 2. СТВОРЕННЯ КОМЕНТАРЯ
-    // =========================================================================
+    // !!!! створення коментаря !!!!
     @PostMapping("/articles/{slug}/discussions")
     public ResponseEntity<?> addDiscussion(
             @PathVariable String slug,
@@ -79,10 +72,7 @@ public class DiscussionController {
         Discussion savedDiscussion = discussionRepository.save(discussion);
         return ResponseEntity.ok(savedDiscussion);
     }
-
-    // =========================================================================
-    // 3. БЕЗПЕЧНЕ ВИДАЛЕННЯ (Тільки автор або Адмін)
-    // =========================================================================
+    // !!!! видалення (тільки автор або адмін) !!!!
     @DeleteMapping("/articles/{slug}/discussions/{discussionId}")
     public ResponseEntity<?> deleteDiscussion(
             @PathVariable String slug,
@@ -113,10 +103,7 @@ public class DiscussionController {
         discussionRepository.deleteById(discussionId);
         return ResponseEntity.ok().build();
     }
-
-    // =========================================================================
-    // 4. ОСОБИСТІ ОБГОВОРЕННЯ ДЛЯ КАБІНЕТУ (З ПАГІНАЦІЄЮ)
-    // =========================================================================
+    // !!!! особисті коментарі з пагінацією !!!!
     @GetMapping("/discussions/my")
     public ResponseEntity<?> getMyDiscussions(
             @RequestParam(defaultValue = "0") int page,

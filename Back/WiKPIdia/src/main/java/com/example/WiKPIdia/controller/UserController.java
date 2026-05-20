@@ -26,8 +26,6 @@ public class UserController {
 
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
-
-    // ДОДАНО: Ін'єкція нового репозиторію
     private final SavedArticleRepository savedArticleRepository;
 
     private String getActiveUsernameSafely() {
@@ -73,8 +71,7 @@ public class UserController {
                     "date", "20.05.2026"
             ));
         }
-
-        // ВИПРАВЛЕНО: Тепер ми тягнемо РЕАЛЬНІ збережені статті з нової таблиці БД
+        // підтягуємо збережені статті з нової таблиці бд
         List<SavedArticle> savedDbArticles = savedArticleRepository.findByUsernameOrderByIdDesc(activeUsername);
         List<Map<String, String>> savedArticles = new ArrayList<>();
         for (SavedArticle sa : savedDbArticles) {
@@ -89,9 +86,7 @@ public class UserController {
         return ResponseEntity.ok(Map.of("userInfo", userInfo, "recentPublications", recentPublications, "savedArticles", savedArticles));
     }
 
-    // =========================================================================
-    // ОТРИМАННЯ ІСТОРІЇ ОБГОВОРЕНЬ (КОМЕНТАРІВ КОРИСТУВАЧА)
-    // =========================================================================
+    // !!!!! отримання історії обговорень користувача !!!!!
     @GetMapping("/discussions")
     public ResponseEntity<?> getUserDiscussions() {
         String activeUsername = getActiveUsernameSafely();
@@ -99,7 +94,6 @@ public class UserController {
         if (activeUsername == null || "anonymousUser".equals(activeUsername)) {
             return ResponseEntity.status(401).body(Map.of("error", "Не авторизовано"));
         }
-
         // --- ВАРІАНТ 1: Реальне підключення до бази даних ---
         // (Якщо у вас є сутність коментарів, підключіть репозиторій і розкоментуйте цей блок)
         /*

@@ -40,7 +40,7 @@ public class SearchController {
                 }
             }
         }
-        // якщо шукають авторів (фейкові дані для демонстрації викладачу)
+        // якщо шукають авторів
         else if ("authors".equals(type)) {
             if ("шеремета".contains(queryLower) || "артем".contains(queryLower) || q.isEmpty()) {
                 results.add(Map.of(

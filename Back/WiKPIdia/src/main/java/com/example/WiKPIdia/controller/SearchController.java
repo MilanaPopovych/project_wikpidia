@@ -21,32 +21,26 @@ public class SearchController {
     public List<Object> search(@RequestParam String q, @RequestParam(defaultValue = "articles") String type) {
         List<Object> results = new ArrayList<>();
         String queryLower = q.toLowerCase();
-
-        // 1. Якщо шукають статті (йдемо у твою справжню базу даних)
+        // якщо шукають статті йдемо в бд
         if ("articles".equals(type)) {
             List<Article> allArticles = articleRepository.findByIsPublishedTrue();
             for (Article article : allArticles) {
-                // Перевіряємо, чи є текст запиту в заголовку або тексті статті
+                // перевірка на текст запиту в заголовку або тексті статті
                 if (article.getTitle().toLowerCase().contains(queryLower) ||
                         article.getContent().toLowerCase().contains(queryLower)) {
-
-                    // Обрізаємо текст для прев'ю (snippet)
-                    String snippet = article.getContent().length() > 100
+                    String snippet = article.getContent().length() > 100    // обрізка тексту для прев'ю 
                             ? article.getContent().substring(0, 100) + "..."
                             : article.getContent();
-
-                    // ВИПРАВЛЕНО: Додано передачу поля "slug" на фронтенд.
-                    // Якщо слаг відсутній (стара стаття), тимчасово передаємо ID, щоб Map.of не впав з помилкою.
                     results.add(Map.of(
                             "id", article.getId(),
                             "title", article.getTitle(),
-                            "slug", article.getSlug() != null ? article.getSlug() : String.valueOf(article.getId()),
+                            "slug", article.getSlug() != null ? article.getSlug() : String.valueOf(article.getId()),  // якщо слаг відсутній, тимчасово передаємо ID
                             "snippet", snippet
                     ));
                 }
             }
         }
-        // 2. Якщо шукають авторів (фейкові дані для демонстрації викладачу)
+        // якщо шукають авторів (фейкові дані для демонстрації викладачу)
         else if ("authors".equals(type)) {
             if ("шеремета".contains(queryLower) || "артем".contains(queryLower) || q.isEmpty()) {
                 results.add(Map.of(
@@ -61,7 +55,7 @@ public class SearchController {
                 ));
             }
         }
-        // 3. Якщо шукають категорії
+        // якщо шукають категорії
         else if ("categories".equals(type)) {
             results.add(Map.of(
                     "id", 1, "name", "Історія КПІ",

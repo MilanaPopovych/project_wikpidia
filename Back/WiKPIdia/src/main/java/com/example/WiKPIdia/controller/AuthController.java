@@ -59,10 +59,8 @@ public class AuthController {
         // перевірка на існування користувача
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            // 3. БЕЗПЕЧНЕ ПОРІВНЯННЯ: Використовуємо passwordEncoder.matches()
-            // Він бере чистий пароль "12345", хешує його під капотом і порівнює з хешем із БД
+            // passwordEncoder.matches() хешує пароль і порівнює з хешем БД 
             if (passwordEncoder.matches(password, user.getPassword())) {
-
                 // оновлення глобальної сесії за успішного введення паролю
                 AuthController.currentSessionUser = user.getUsername();
                 return ResponseEntity.ok(Map.of(

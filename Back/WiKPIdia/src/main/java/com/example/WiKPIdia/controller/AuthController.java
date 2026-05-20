@@ -5,6 +5,7 @@ import com.example.WiKPIdia.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -18,24 +19,25 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserRepository userRepository;
-
-    // Глобальна змінна-сесія, щоб сайт пам'ятав, хто зараз онлайн
-    public static String currentSessionUser = "termenatorof";
+    // шифрувальник паролів
+    private final PasswordEncoder passwordEncoder;
+    // змінна-сесія, щоб сайт пам'ятав, хто зараз онлайн
+    public static String currentSessionUser = null;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> userData) {
         String username = userData.get("username");
         String password = userData.get("password");
-
-        // 1. Перевіряємо, чи немає вже такого юзера
+        // перевірка на існування користувача
         if (userRepository.existsByUsername(username)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Цей логін вже зайнятий!"));
         }
-
-        // 2. Створюємо нового користувача і записуємо в БД
+        // створюємо нового користувача і записуємо в бд
         User newUser = new User();
         newUser.setUsername(username);
-        newUser.setPassword(password); // Зберігаємо пароль
+        // хешування паролю перед збереженням у PostgreSQL
+        newUser.setPassword(passwordEncoder.encode(password));
+
         newUser.setEmail(userData.getOrDefault("email", username + "@edu.kpi.ua"));
         newUser.setFullName(userData.getOrDefault("fullName", "Користувач " + username));
         newUser.setRole("Користувач"); // За замовчуванням всі новачки — звичайні користувачі
@@ -45,7 +47,7 @@ public class AuthController {
 
         userRepository.save(newUser);
 
-        currentSessionUser = username; // Одразу авторизуємо після реєстрації
+        currentSessionUser = username; // одразу авторизуємо після реєстрації
         return ResponseEntity.ok(Map.of("message", "Реєстрація успішна!"));
     }
 
@@ -53,23 +55,25 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
-
-        // 1. Шукаємо користувача в базі
-        Optional<User> userOptional = userRepository.findByUsername(username);
-
-        // 2. Якщо юзер є і пароль співпадає — пускаємо
-        if (userOptional.isPresent() && userOptional.get().getPassword().equals(password)) {
+        Optional<User> userOptional = userRepository.findByUsername(username); // пошук користувача в БД
+        // перевірка на існування користувача
+        if (userOptional.isPresent()) {
             User user = userOptional.get();
-            currentSessionUser = user.getUsername(); // Запам'ятовуємо, хто зайшов
+            // 3. БЕЗПЕЧНЕ ПОРІВНЯННЯ: Використовуємо passwordEncoder.matches()
+            // Він бере чистий пароль "12345", хешує його під капотом і порівнює з хешем із БД
+            if (passwordEncoder.matches(password, user.getPassword())) {
 
-            return ResponseEntity.ok(Map.of(
-                    "token", "real-session-token",
-                    "username", user.getUsername(),
-                    "role", user.getRole()
-            ));
+                // оновлення глобальної сесії за успішного введення паролю
+                AuthController.currentSessionUser = user.getUsername();
+                return ResponseEntity.ok(Map.of(
+                        // повернення успішної відповіді на фронт
+                        "token", "real-session-token",
+                        "username", user.getUsername(),
+                        "role", user.getRole()
+                ));
+            }
         }
-
-        // 3. Якщо пароль невірний — відкидаємо запит
+        // якщо логін не знайдено або паролі не збіглися, відкидаємо запит
         return ResponseEntity.status(401).body(Map.of("message", "Неправильний логін або пароль."));
     }
 }

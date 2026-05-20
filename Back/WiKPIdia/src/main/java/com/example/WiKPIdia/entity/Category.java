@@ -12,19 +12,13 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
     private Long id;
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(name = "parent_id")
-    private Long parentId;
-
-    // Налаштування зв'язку багато-до-багатьох через проміжну таблицю
     @ManyToMany
     @JoinTable(
-            name = "article_categories",
+            name = "category_articles",
             joinColumns = @JoinColumn(name = "category_id"),
             inverseJoinColumns = @JoinColumn(name = "article_id")
     )

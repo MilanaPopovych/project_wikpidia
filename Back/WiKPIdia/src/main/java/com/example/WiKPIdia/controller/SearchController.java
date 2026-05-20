@@ -35,9 +35,12 @@ public class SearchController {
                             ? article.getContent().substring(0, 100) + "..."
                             : article.getContent();
 
+                    // ВИПРАВЛЕНО: Додано передачу поля "slug" на фронтенд.
+                    // Якщо слаг відсутній (стара стаття), тимчасово передаємо ID, щоб Map.of не впав з помилкою.
                     results.add(Map.of(
                             "id", article.getId(),
                             "title", article.getTitle(),
+                            "slug", article.getSlug() != null ? article.getSlug() : String.valueOf(article.getId()),
                             "snippet", snippet
                     ));
                 }
